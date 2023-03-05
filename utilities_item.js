@@ -165,7 +165,12 @@ var Utilities_Item = {
 		for(var variable in Zotero.Schema.CSL_DATE_MAPPINGS) {
 			var date = zoteroItem[Zotero.Schema.CSL_DATE_MAPPINGS[variable]];
 			if (!date) {
-				var typeSpecificFieldID = Zotero.ItemFields.getFieldIDFromTypeAndBase(itemTypeID, Zotero.Schema.CSL_DATE_MAPPINGS[variable]);
+				for (var dateField of Zotero.Schema.CSL_DATE_MAPPINGS[variable]) {
+					if (Zotero.ItemFields.isValidForType(dateField, zoteroItem.type)) {
+						var typeSpecificFieldID = Zotero.ItemFields.getFieldIDFromTypeAndBase(itemTypeID, dateField);
+					}
+				}
+				
 				if (typeSpecificFieldID) {
 					date = zoteroItem[Zotero.ItemFields.getName(typeSpecificFieldID)];
 				}
