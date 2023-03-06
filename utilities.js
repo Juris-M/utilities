@@ -44,75 +44,100 @@ function movedToUtilitiesInternal(fnName) {
  */
 var Utilities = {
 	
-	// OH!
-	// We need two different maps for types!
-	// One for encode/decode, which sets the base Zotero type; and
-	// One for zotero/csl conversion, which sets the CSL type.
-	// How to handle this???
-	// The patch data can express both.
-	// For encoding, we use Zotero.Jurism.EXTENDED.TYPES, which is the map from schema-jurism-patch.json
-	// Decoding works by restoring the original memoed value, so no map is required
-	// For zotero/csl transforms, we just tweak Zotero.Schema.CSL_TYPE_MAPPINGS and Zotero.Schema.CSL_TYPE_MAPPINGS_REVERSE as required
-	
-	initMaps: function() {
-		if (this._mapsInitialized) return;
-		/**
-		 * Extend mappings
-		 */
-		// Zotero.Jurism.MapTools.patchMap("CREATORS", Zotero.Schema.CSL_NAME_MAPPINGS);
-		// Zotero.Jurism.MapTools.patchMap("FIELDS", Zotero.Schema.CSL_TEXT_MAPPINGS);
-		// Zotero.Jurism.MapTools.patchMap("DATES", Zotero.Schema.CSL_DATE_MAPPINGS);
+	/**
+	 * Multilingual helpers
+	 */
 
-		// Types are a little weird
-		for (var zoteroType in Zotero.Jurism.PATCH.TYPES.override) {
-			var cslType = Zotero.Jurism.PATCH.TYPES.override[zoteroType];
-			Zotero.Schema.CSL_TYPE_MAPPINGS_REVERSE[cslType] = [zoteroType];
+	/**
+	 * Sets a multilingual field value
+	 * Used in translators.
+	 *
+	 * @param {Object} obj Item object
+	 * @param {String} field Field name
+	 * @param {String} val Field value
+	 * @param {String} languageTag RFC 5646 language tag
+	 */
+	setMultiField:function (obj, field, val, languageTag, defaultLanguage) {
+		// Validate parameters
+		if ("string" !== typeof val) {
+			throw "Invalid value for multilingual field";
 		}
-		for (var jurismType in Zotero.Jurism.PATCH.TYPES.add) {
-			// This one can be confusing. jurismType key is the native Jurism
-			// item type. zotero subkey is what it must be translated to for sync.
-			// csl subkey is what the type maps to in CSL-M, which is the same as the
-			// native Jurism type name.
-			var cslType = Zotero.Jurism.PATCH.TYPES.add[jurismType].csl;
-			Zotero.Schema.CSL_TYPE_MAPPINGS_REVERSE[cslType] = [jurismType];
+		if (!field) {
+			throw "No field value given to setMultiField";
 		}
-		
-		//for (let zoteroType in Zotero.Schema.CSL_TYPE_MAPPINGS) {
-		//	Zotero.Schema.CSL_TYPE_MAPPINGS_REVERSE[Zotero.Schema.CSL_TYPE_MAPPINGS[zoteroType]] = zoteroType;
-		//}
+		// Initialize if required
+		if (languageTag) {
+			if (!obj.multi) {
+				obj.multi = {};
+			}
+			if (!obj.multi.main) {
+				obj.multi.main = {};
+			}
+			if (!obj.multi._keys) {
+				obj.multi._keys = {};
+			}
+		}
+		// Set field value
+		if (!obj[field]) {
+			obj[field] = val;
+			if (languageTag && languageTag !== defaultLanguage) {
+				obj.multi.main[field] = languageTag;
+			}
+		} else if (languageTag) {
+			if (!obj.multi._keys[field]) {
+				obj.multi._keys[field] = {};
+			}
+			obj.multi._keys[field][languageTag] = val;
+		}
+	},
 
-		// A reverse map (CSL to Jurism) for dates
-		//this.CSL_DATE_VARIABLES = (function() {
-		//	var ret = {};
-		//	for (var zField in Zotero.Schema.CSL_DATE_MAPPINGS) {
-		//		Zotero.Schema.CSL_DATE_MAPPINGS[zField].forEach(function(cField){
-		//			ret[cField] = zField;
-		//		});
-		//	}
-		//	return ret;
-		//})();
+	/**
+	 * Sets a multilingual creator
+	 * Used in translators.
+	 *
+	 * @param {Object} obj Parent creator object (may be empty)
+	 * @param {String} child Child creator object to be added
+	 * @param {String} languageTag RFC 5646 language tag
+	 */
+	setMultiCreator:function (obj, child, languageTag, creatorType, defaultLanguage) {
+		// Validate parameters
+		if ("object" !== typeof obj) {
+			throw "Multilingual creator parent must be an object";
+		}
+		if ("object" !== typeof child) {
+			throw "Multilingual creator child must be an object";
+		}
+		if (obj.itemID) {
+			throw "Must give creator as multilingual creator parent, not item";
+		}
+		// Initialize if required
+		if (languageTag) {
+			if (!obj.multi) {
+				obj.multi = {};
+			}
+			if (!obj.multi._key) {
+				obj.multi._key = {};
+			}
+		}
+		// Set field value
+		if (!obj.lastName) {
+			obj.lastName = child.lastName;
+			obj.firstName = child.firstName;
+			obj.creatorType = creatorType;
+			if (languageTag && languageTag !== defaultLanguage) {
+				obj.multi.main = languageTag;
+			}
+		} else  if (languageTag) {
+			obj.multi._key[languageTag] = child;
+		}
+	},
 
-		this.ENCODE = {
-			CREATORS: Zotero.Jurism.MapTools.makeEncodeMap("CREATORS", Zotero.Schema.CSL_NAME_MAPPINGS),
-			FIELDS: Zotero.Jurism.MapTools.makeEncodeMap("FIELDS", Zotero.Schema.CSL_TEXT_MAPPINGS, true),
-			DATES: Zotero.Jurism.MapTools.makeEncodeMap("DATES", Zotero.Schema.CSL_DATE_MAPPINGS)
-		};
-
-		this.DECODE = {
-			CREATORS: Zotero.Jurism.MapTools.makeDecodeMap("CREATORS", Zotero.Schema.CSL_NAME_MAPPINGS),
-			FIELDS: Zotero.Jurism.MapTools.makeDecodeMap("FIELDS", Zotero.Schema.CSL_TEXT_MAPPINGS),
-			DATES: Zotero.Jurism.MapTools.makeDecodeMap("DATES", Zotero.Schema.CSL_DATE_MAPPINGS)
-		};
-		this.REVERSE = {
-			CREATORS: Zotero.Jurism.MapTools.makeReverseMap("CREATORS", Zotero.Schema.CSL_NAME_MAPPINGS),
-			FIELDS: Zotero.Jurism.MapTools.makeReverseMap("FIELDS", Zotero.Schema.CSL_TEXT_MAPPINGS),
-			DATES: Zotero.Jurism.MapTools.makeReverseMap("DATES", Zotero.Schema.CSL_DATE_MAPPINGS),
-		};
-
-		this.CSL_FORCE_FIELD_CONTENT = Zotero.Jurism.MapTools.getMap("FORCE_FIELD_CONTENT");
-		this.CSL_FORCE_REMAP = Zotero.Jurism.MapTools.getMap("FORCE_REMAP");
-
-		this._mapsInitialized = true;
+	getMultiCreator:function(obj, fieldName, langTag) {
+		if (!langTag) {
+			return obj[fieldName];
+		} else {
+			return obj.multi._key[langTag][fieldName]
+		}
 	},
 
 	isDate: function(varName) {
