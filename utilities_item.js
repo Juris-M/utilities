@@ -126,6 +126,7 @@ var Utilities_Item = {
 			zoteroItem = Zotero.Jurism.SyncRecode.encode(zoteroItem);
 		}
 
+
 		var cslType = Zotero.Schema.CSL_TYPE_MAPPINGS[zoteroItem.itemType];
 		
 		if (!cslType) {
@@ -255,7 +256,7 @@ var Utilities_Item = {
 					}
 					for (var langTag in creator.multi._key) {
 						nameObj.multi._key[langTag] = {};
-						Zotero.Utilities.creatorConvItemToCSLJSON(nameObj.multi._key[langTag], creator.multi._key[langTag]);
+						this.creatorConvItemToCSLJSON(nameObj.multi._key[langTag], creator.multi._key[langTag]);
 					}
 				} else if (creator.name) {
 					nameObj = {'literal': creator.name};
@@ -481,7 +482,6 @@ var Utilities_Item = {
 			zoteroType;
 
 		if (!cslItem.type) {
-			Zotero.debug(cslItem, 1);
 			throw new Error("No 'type' provided in CSL-JSON");
 		}
 
