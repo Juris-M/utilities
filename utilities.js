@@ -43,6 +43,112 @@ function movedToUtilitiesInternal(fnName) {
  * @class Functions for text manipulation and other miscellaneous purposes
  */
 var Utilities = {
+	
+	/**
+	 * Multilingual helpers
+	 */
+
+	/**
+	 * Sets a multilingual field value
+	 * Used in translators.
+	 *
+	 * @param {Object} obj Item object
+	 * @param {String} field Field name
+	 * @param {String} val Field value
+	 * @param {String} languageTag RFC 5646 language tag
+	 */
+	setMultiField:function (obj, field, val, languageTag, defaultLanguage) {
+		// Validate parameters
+		if ("string" !== typeof val) {
+			throw "Invalid value for multilingual field";
+		}
+		if (!field) {
+			throw "No field value given to setMultiField";
+		}
+		// Initialize if required
+		if (languageTag) {
+			if (!obj.multi) {
+				obj.multi = {};
+			}
+			if (!obj.multi.main) {
+				obj.multi.main = {};
+			}
+			if (!obj.multi._keys) {
+				obj.multi._keys = {};
+			}
+		}
+		// Set field value
+		if (!obj[field]) {
+			obj[field] = val;
+			if (languageTag && languageTag !== defaultLanguage) {
+				obj.multi.main[field] = languageTag;
+			}
+		} else if (languageTag) {
+			if (!obj.multi._keys[field]) {
+				obj.multi._keys[field] = {};
+			}
+			obj.multi._keys[field][languageTag] = val;
+		}
+	},
+
+	/**
+	 * Sets a multilingual creator
+	 * Used in translators.
+	 *
+	 * @param {Object} obj Parent creator object (may be empty)
+	 * @param {String} child Child creator object to be added
+	 * @param {String} languageTag RFC 5646 language tag
+	 */
+	setMultiCreator:function (obj, child, languageTag, creatorType, defaultLanguage) {
+		// Validate parameters
+		if ("object" !== typeof obj) {
+			throw "Multilingual creator parent must be an object";
+		}
+		if ("object" !== typeof child) {
+			throw "Multilingual creator child must be an object";
+		}
+		if (obj.itemID) {
+			throw "Must give creator as multilingual creator parent, not item";
+		}
+		// Initialize if required
+		if (languageTag) {
+			if (!obj.multi) {
+				obj.multi = {};
+			}
+			if (!obj.multi._key) {
+				obj.multi._key = {};
+			}
+		}
+		// Set field value
+		if (!obj.lastName) {
+			obj.lastName = child.lastName;
+			obj.firstName = child.firstName;
+			obj.creatorType = creatorType;
+			if (languageTag && languageTag !== defaultLanguage) {
+				obj.multi.main = languageTag;
+			}
+		} else  if (languageTag) {
+			obj.multi._key[languageTag] = child;
+		}
+	},
+
+	getMultiCreator:function(obj, fieldName, langTag) {
+		if (!langTag) {
+			return obj[fieldName];
+		} else {
+			return obj.multi._key[langTag][fieldName]
+		}
+	},
+
+	isDate: function(varName) {
+		return Zotero.Schema.CSL_DATE_MAPPINGS[varName] ? true : false;
+	},
+
+	getCslTypeFromItemType:function(itemType) {
+		if (!this._mapsInitialized) this.initMaps();
+		return Zotero.Schema.CSL_TYPE_MAPPINGS[itemType];
+	},
+
 	/**
 	 * Returns a function which will execute `fn` with provided arguments after `delay` milliseconds and not more
 	 * than once, if called multiple times. See
