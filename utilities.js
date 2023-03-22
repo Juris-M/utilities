@@ -1586,6 +1586,10 @@ var Utilities = {
 				level = maxLevel;
 			}
 		}
+		// Do the same for cross-context Node and Window objects
+		if (obj.hasOwnProperty('nodeType') || objType === '[object Window]') {
+			level = maxLevel;
+		}
 
 		// Recursion checking
 		if(!parentObjects) {

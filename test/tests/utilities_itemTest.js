@@ -319,4 +319,36 @@ describe("Zotero.Utilities.Item", function () {
 			checkSort(numbersInOrder);
 		});
 	});
+
+	describe("#languageToISO6391()", function () {
+		it("should convert localized language names to ISO 639-1", function () {
+			var language = 'French';
+			language = Zotero.Utilities.Item.languageToISO6391(language);
+			assert.equal(language, 'fr');
+
+			language = 'francais'; // Diacritics are ignored
+			language = Zotero.Utilities.Item.languageToISO6391(language)
+			assert.equal(language, 'fr');
+
+			language = 'foobar';
+			language = Zotero.Utilities.Item.languageToISO6391(language)
+			assert.equal(language, 'foobar');
+
+			language = 'zh-Hans';
+			language = Zotero.Utilities.Item.languageToISO6391(language)
+			assert.equal(language, 'zh-Hans');
+
+			language = 'العربية';
+			language = Zotero.Utilities.Item.languageToISO6391(language)
+			assert.equal(language, 'ar');
+
+			// If Intl is unavailable, should return the input value
+			let Intl = globalThis.Intl;
+			globalThis.Intl = undefined;
+			language = 'French';
+			language = Zotero.Utilities.Item.languageToISO6391(language)
+			assert.equal(language, 'French');
+			globalThis.Intl = Intl;
+		});
+	});
 });
