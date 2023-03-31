@@ -28,15 +28,8 @@
 // Various Utility functions related to Zotero, API, Translation Item formats
 // and their conversion or field access.
 
-var Utilities_Item = {
+    var Utilities_Item = {
 
-	initMaps: function() {
-		if (!Zotero.Utilities.Internal._mapsInitialized) {
-			Zotero.Utilities.Internal.initMaps();
-		}
-		this._mapsInitialized = true;
-	},
-	
 	PARTICLE_GIVEN_REGEXP: /^([^ ]+(?:\u02bb |\u2019 | |\' ) *)(.+)$/,
 	PARTICLE_FAMILY_REGEXP: /^([^ ]+(?:\-|\u02bb|\u2019| |\') *)(.+)$/,
 	
@@ -100,13 +93,13 @@ var Utilities_Item = {
 	 *     is passed
 	 */
 	"itemToCSLJSON":function(zoteroItem, portableJSON, includeRelations) {
-		if (!this._mapsInitialized) this.initMaps();
+		if (!Zotero.Utilities.Internal._mapsInitialized) Zotero.Utilities.Internal.initMaps();
 		// If a Zotero.Item was passed, convert it to the proper format (skipping child items) and
 		// call this function again with that object
 		//
 		// (Zotero.Item won't be defined in translation-server)
 		if (typeof Zotero.Item !== 'undefined' && zoteroItem instanceof Zotero.Item) {
-			return this.itemToCSLJSON(
+			return Utilities_Item.itemToCSLJSON(
 				Zotero.Utilities.Internal.itemToExportFormat(zoteroItem, false, true, true),
 				portableJSON,
 				includeRelations
@@ -246,7 +239,7 @@ var Utilities_Item = {
 				}
 
 				var nameObj = {};
-				this.creatorConvItemToCSLJSON(nameObj, creator);
+				Utilities_Item.creatorConvItemToCSLJSON(nameObj, creator);
 				
 				if (!portableJSON) {
 					nameObj.multi = {};
@@ -256,7 +249,7 @@ var Utilities_Item = {
 					}
 					for (var langTag in creator.multi._key) {
 						nameObj.multi._key[langTag] = {};
-						this.creatorConvItemToCSLJSON(nameObj.multi._key[langTag], creator.multi._key[langTag]);
+						Utilities_Item.creatorConvItemToCSLJSON(nameObj.multi._key[langTag], creator.multi._key[langTag]);
 					}
 				} else if (creator.name) {
 					nameObj = {'literal': creator.name};
@@ -374,7 +367,7 @@ var Utilities_Item = {
      * type mapping in Juris-M
      */
     "getZoteroTypeFromCslType": function(cslItem, strict) {
-		if (!this._mapsInitialized) this.initMaps();
+		if (!Zotero.Utilities.Internal._mapsInitialized) Zotero.Utilities.Internal.initMaps();
 		
 		// Some special cases to help us map item types correctly
 		// This ensures that we don't lose data on import. The fields
@@ -446,8 +439,8 @@ var Utilities_Item = {
     },		
 	
     "getValidCslFields": function (cslItem) {
-		if (!this._mapsInitialized) this.initMaps();
-        var zoteroType = this.getZoteroTypeFromCslType(cslItem);
+		if (!Zotero.Utilities.Internal._mapsInitialized) Zotero.Utilities.Internal.initMaps();
+        var zoteroType = Utilities_Item.getZoteroTypeFromCslType(cslItem);
         var zoteroTypeID = Zotero.ItemTypes.getID(zoteroType);
         var zoteroFields = Zotero.ItemFields.getItemTypeFields(zoteroTypeID);
         var validFields = {};
@@ -477,7 +470,7 @@ var Utilities_Item = {
 	 * @param {Object} cslItem
 	 */
 	"itemFromCSLJSON":function(item, cslItem, libraryID, portableJSON) {
-		if (!this._mapsInitialized) this.initMaps();
+		if (!Zotero.Utilities.Internal._mapsInitialized) Zotero.Utilities.Internal.initMaps();
 		var isZoteroItem = !!item.setType,
 			zoteroType;
 
@@ -499,7 +492,7 @@ var Utilities_Item = {
 			}
 		}
 
-        var zoteroType = this.getZoteroTypeFromCslType(cslItem);
+        var zoteroType = Utilities_Item.getZoteroTypeFromCslType(cslItem);
 
 		var itemTypeID = Zotero.ItemTypes.getID(zoteroType);
 		if(isZoteroItem) {
