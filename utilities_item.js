@@ -728,6 +728,7 @@
 			json = Zotero.Jurism.SyncRecode.decode(json);
 			item.fromJSON(json);
 		}
+		item.seeAlso = cslItem.seeAlso;
 	},
 	
 	/**
