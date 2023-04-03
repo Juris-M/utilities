@@ -152,7 +152,7 @@
 		//	}
 		//}
 		
-		cslItem.id = zoteroItem.id;
+		cslItem.id = zoteroItem.uri;
 
 		// get all text variables (there must be a better way)
 		for(var variable in Zotero.Schema.CSL_TEXT_MAPPINGS) {
