@@ -92,7 +92,7 @@
 	 * @return {Object|Promise<Object>} A CSL item, or a promise for a CSL item if a Zotero.Item
 	 *     is passed
 	 */
-	"itemToCSLJSON":function(zoteroItem, portableJSON, includeRelations) {
+	"itemToCSLJSON":function(zoteroItem, portableJSON, includeRelations, formattedValues) {
 		if (!Zotero.Utilities.Internal._mapsInitialized) Zotero.Utilities.Internal.initMaps();
 		// If a Zotero.Item was passed, convert it to the proper format (skipping child items) and
 		// call this function again with that object
@@ -102,7 +102,8 @@
 			return Utilities_Item.itemToCSLJSON(
 				Zotero.Utilities.Internal.itemToExportFormat(zoteroItem, false, true, true),
 				portableJSON,
-				includeRelations
+				includeRelations,
+				formattedValues
 			);
 		}
 		
@@ -142,6 +143,19 @@
 				'_keys':{}
 			}
 		};
+
+		function jurisdictionValue(val, formattedValues) {
+			var m = val.match(/^([0-9]{3})/);
+			if (m) {
+				var offset = parseInt(m[1], 10);
+				if (formattedValues) {
+					val = val.slice(offset + 3);
+				} else {
+					val = val.slice(3, (offset + 3));
+				}
+			}
+			return val;
+		}
 
 		// ??? Is this EVER useful?
 		//if (!portableJSON) {
@@ -187,10 +201,12 @@
 						if (isbn) value = isbn[0];
 					}
 					else if (field == 'jurisdiction') {
-						var m = value.match(/^([0-9]{3})/);
-						if (m) {
-							var offset = parseInt(m[1], 10);
-							value = value.slice(3, (offset + 3));
+						value = jurisdictionValue(value, formattedValues);
+					}
+					else if (field == 'court') {
+						if (formattedValues) {
+							var jurisdictionID = jurisdictionValue(zoteroItem['jurisdiction']);
+							value = Zotero.CachedJurisdictionData.courtNameFromId(jurisdictionID, value);
 						}
 					}
 					else if (field == 'extra') {
