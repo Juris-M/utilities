@@ -148,10 +148,11 @@
 			var m = val.match(/^([0-9]{3})/);
 			if (m) {
 				var offset = parseInt(m[1], 10);
+				var id = val.slice(3, 3 + offset);
 				if (formattedValues) {
-					val = val.slice(offset + 3);
+					val = Zotero.CachedJurisdictionData.jurisdictionNameFromId(id);
 				} else {
-					val = val.slice(3, (offset + 3));
+					val = id;
 				}
 			}
 			return val;
