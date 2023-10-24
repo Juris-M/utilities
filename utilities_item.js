@@ -741,9 +741,18 @@
 			// Convert item to JSON,
 			// Run conversion
 			// Convert back to Zotero item.
-			var json = item.toJSON();
+			var json;
+			if (isZoteroItem) {
+				json = item.toJSON();
+			} else {
+				json = item;
+			}
 			json = Zotero.Jurism.SyncRecode.decode(json);
-			item.fromJSON(json);
+			if (isZoteroItem) {
+				item.fromJSON(json);
+			} else {
+				Object.assign(item, json);
+			}
 		}
 		item.seeAlso = cslItem.seeAlso;
 	},
