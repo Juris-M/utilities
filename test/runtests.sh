@@ -8,12 +8,12 @@ Usage: $0 [option]
 Options
  -g PATTERN          only run tests matching the given pattern (grep)
  -h                  display this help
- -j PATH             path to schema.json (default: from resource/schema/global)
+ -j PATH             path to schema-jurism.json (default: from resource/schema/global)
 DONE
 	exit 1
 }
 
-export UTILITIES_SCHEMA_PATH="$SCRIPT_DIR/../resource/schema/global/schema.json"
+export UTILITIES_SCHEMA_PATH="$SCRIPT_DIR/../resource/schema/global/schema-jurism.json"
 
 while getopts "g:hj:" opt; do
 	case $opt in
