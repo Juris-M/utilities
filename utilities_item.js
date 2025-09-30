@@ -1142,7 +1142,9 @@
 				version: 0
 			},
 			newItems = [newItem];
-
+		
+		item = Zotero.Jurism.SyncRecode.encode(item);
+		
 		var typeID = Zotero.ItemTypes.getID(item.itemType);
 		if(!typeID) {
 			Zotero.debug(`itemToAPIJSON: Invalid itemType ${item.itemType}; using webpage`);
