@@ -92,6 +92,7 @@
 	 * @return {Object|Promise<Object>} A CSL item, or a promise for a CSL item if a Zotero.Item
 	 *     is passed
 	 */
+	// Jurism: extended argument includeRelations is ignored (always assumed true).
 	"itemToCSLJSON":function(zoteroItem, portableJSON, includeRelations, formattedValues) {
 		if (!Zotero.Utilities.Internal._mapsInitialized) Zotero.Utilities.Internal.initMaps();
 		// If a Zotero.Item was passed, convert it to the proper format (skipping child items) and
@@ -372,9 +373,11 @@
 			cslItem.title = Zotero.Notes.noteToTitle(zoteroItem.note);
 		}
 
-		if (includeRelations) {
-			cslItem.seeAlso = zoteroItem.seeAlso;
-		}
+		// NB: no longer conditional
+		//if (includeRelations) {
+		//	cslItem.seeAlso = zoteroItem.seeAlso;
+		//}
+		cslItem.seeAlso = zoteroItem.seeAlso;
 		//this._cache[zoteroItem.id] = cslItem;
 		return cslItem;
 	},
