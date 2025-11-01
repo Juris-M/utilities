@@ -28,7 +28,7 @@
 // Various Utility functions related to Zotero, API, Translation Item formats
 // and their conversion or field access.
 
-    var Utilities_Item = {
+	var Utilities_Item = {
 
 	PARTICLE_GIVEN_REGEXP: /^([^ ]+(?:\u02bb |\u2019 | |\' ) *)(.+)$/,
 	PARTICLE_FAMILY_REGEXP: /^([^ ]+(?:\-|\u02bb|\u2019| |\') *)(.+)$/,
@@ -386,13 +386,13 @@
      * Converts CSL type to Zotero type, accounting for extended
      * type mapping in Juris-M
      */
-    "getZoteroTypeFromCslType": function(cslItem, strict) {
+	"getZoteroTypeFromCslType": function(cslItem, strict) {
 		if (!Zotero.Utilities.Internal._mapsInitialized) Zotero.Utilities.Internal.initMaps();
 		
 		// Some special cases to help us map item types correctly
 		// This ensures that we don't lose data on import. The fields
 		// we check are incompatible with the alternative item types
-        var zoteroType = null;
+		var zoteroType = null;
 		if (cslItem.type == 'book') {
 			zoteroType = 'book';
 			if (cslItem.version) {
@@ -455,34 +455,34 @@
 			zoteroType = "document";
 		}
 		
-        return zoteroType;
-    },		
+		return zoteroType;
+	},		
 	
-    "getValidCslFields": function (cslItem) {
+	"getValidCslFields": function (cslItem) {
 		if (!Zotero.Utilities.Internal._mapsInitialized) Zotero.Utilities.Internal.initMaps();
-        var zoteroType = Utilities_Item.getZoteroTypeFromCslType(cslItem);
-        var zoteroTypeID = Zotero.ItemTypes.getID(zoteroType);
-        var zoteroFields = Zotero.ItemFields.getItemTypeFields(zoteroTypeID);
-        var validFields = {};
-        outer: for (var i=0,ilen=zoteroFields.length;i<ilen;i++) {
-            var zField = Zotero.ItemFields.getName(zoteroFields[i]);
-            for (var cField in Zotero.Schema.CSL_TEXT_MAPPINGS) { // Both title-short and shortTitle are okay for validation.
-                var lst = Zotero.Schema.CSL_TEXT_MAPPINGS[cField];
-                if (lst.indexOf(zField) > -1) {
-                    validFields[cField] = true;
-                    continue outer;
-                }
-            }
-            for (var cField in Zotero.Schema.CSL_DATE_MAPPINGS) {
-                var lst = Zotero.Schema.CSL_DATE_MAPPINGS[cField];
-                if (lst.indexOf(zField) > -1) {
-                    validFields[cField] = true;
-                    continue outer;
-                }
-            }
-        }
-        return validFields;
-    },
+		var zoteroType = Utilities_Item.getZoteroTypeFromCslType(cslItem);
+		var zoteroTypeID = Zotero.ItemTypes.getID(zoteroType);
+		var zoteroFields = Zotero.ItemFields.getItemTypeFields(zoteroTypeID);
+		var validFields = {};
+		outer: for (var i=0,ilen=zoteroFields.length;i<ilen;i++) {
+			var zField = Zotero.ItemFields.getName(zoteroFields[i]);
+			for (var cField in Zotero.Schema.CSL_TEXT_MAPPINGS) { // Both title-short and shortTitle are okay for validation.
+				var lst = Zotero.Schema.CSL_TEXT_MAPPINGS[cField];
+				if (lst.indexOf(zField) > -1) {
+					validFields[cField] = true;
+					continue outer;
+				}
+			}
+			for (var cField in Zotero.Schema.CSL_DATE_MAPPINGS) {
+				var lst = Zotero.Schema.CSL_DATE_MAPPINGS[cField];
+				if (lst.indexOf(zField) > -1) {
+					validFields[cField] = true;
+					continue outer;
+				}
+			}
+		}
+		return validFields;
+	},
 	
 	/**
 	 * Converts an item in CSL JSON format to a Zotero item
@@ -512,7 +512,7 @@
 			}
 		}
 
-        var zoteroType = Utilities_Item.getZoteroTypeFromCslType(cslItem);
+		var zoteroType = Utilities_Item.getZoteroTypeFromCslType(cslItem);
 
 		var itemTypeID = Zotero.ItemTypes.getID(zoteroType);
 		if(isZoteroItem) {
@@ -560,10 +560,10 @@
 							item[field] = cslItem[variable];
 							if (cslItem.multi) {
 								if (cslItem.multi.main && cslItem.multi.main[variable]) {
-								    if (!item.multi.main[field]) {
-									    item.multi.main[field] = {};
-								    }
-								    item.multi.main[field] = cslItem.multi.main[variable];
+									if (!item.multi.main[field]) {
+										item.multi.main[field] = {};
+									}
+									item.multi.main[field] = cslItem.multi.main[variable];
 								}
 								if (cslItem.multi._keys[variable]) {
 									for (var lang in cslItem.multi._keys[variable]) {
@@ -604,9 +604,9 @@
 		}
 		
 		// separate name variables
-        var doneField = {};
+		var doneField = {};
 		for(let field in Zotero.Schema.CSL_NAME_MAPPINGS) {
-            if (doneField[Zotero.Schema.CSL_NAME_MAPPINGS[field]]) continue;
+			if (doneField[Zotero.Schema.CSL_NAME_MAPPINGS[field]]) continue;
 			if(Zotero.Schema.CSL_NAME_MAPPINGS[field] in cslItem) {
 				var creatorTypeID = Zotero.CreatorTypes.getID(field);
 				if(!Zotero.CreatorTypes.isValidForItemType(creatorTypeID, itemTypeID)) {
@@ -657,7 +657,7 @@
 						}
 						item.creators.push(creator);
 					}
-                    doneField[Zotero.Schema.CSL_NAME_MAPPINGS[field]] = true;
+					doneField[Zotero.Schema.CSL_NAME_MAPPINGS[field]] = true;
 				}
 			}
 		}
@@ -757,7 +757,9 @@
 				Object.assign(item, json);
 			}
 		}
-		item.seeAlso = cslItem.seeAlso;
+		if (cslItem.seeAlso) {
+			item.seeAlso = cslItem.seeAlso;
+		}
 	},
 	
 	/**
